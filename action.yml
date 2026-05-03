@@ -1,0 +1,18 @@
+name: "Deploy to app01"
+inputs:
+  api_key:
+    description: 'Deployment API key'
+  app:
+    description: 'App name'
+  sha:
+    description: 'Repository Git HEAD'
+    default: ${{ github.sha }}
+runs:
+  using: composite
+  steps:
+    - id: deploy
+      shell: bash
+      run: |
+        HEADER_OUT=$(mktemp)
+        curl -D ${HEADER_OUT} -N -H X-Api-Key:${{ inputs.api_key }} https://app01.lineageos.org/deploy/${{ inputs.app }}/${{ inputs.sha }}
+        cat ${HEADER_OUT} | tail -1 | grep -Pq "[sS]tatus: OK\x0d$"
